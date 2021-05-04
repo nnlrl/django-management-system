@@ -1,0 +1,263 @@
+{% extends "index/base.html" %}
+{% load fun_filter %}
+{% load tz %}
+
+{% block title %}LiLabIMU - Order{% endblock %}
+
+{% block content_header %} <h1>订单管理 <small>订单详情</small></h1> {% endblock %}
+
+{% block breadcrumb %}
+  {{ block.super }}
+  <li><span>订单管理</span></li>
+  <li><span>订单详情</span></li>
+{% endblock %}
+
+
+{% block page_content %}
+  {# 订单信息 #}
+  <form action method="post" novalidate>
+    {% csrf_token %}
+    <div class="panel panel-default">
+      <div class="panel-heading">订单信息</div>
+      <div class="row data-type">
+
+        <div class="col-md-2 title">商品名称</div>
+        <div class="col-md-4 data">
+          {{ form.name }}
+        </div>
+
+        <div class="col-md-2 title">公司名称</div>
+        <div class="col-md-4 data">
+          {{ form.company }}
+        </div>
+
+        <div class="col-md-2 title">商品单价</div>
+        <div class="col-md-4 data">
+          <div class="input-group">
+            <span class="input-group-addon">$</span>
+            {{ form.unit_price }}
+          </div>
+        </div>
+
+        <div class="col-md-2 title">商品数量</div>
+        <div class="col-md-4 data">
+          {{ form.amount }}
+        </div>
+
+        <div class="col-md-2 title">商品总价</div>
+        <div class="col-md-4 data">
+          <div class="input-group">
+            <span class="input-group-addon">$</span>
+            {{ form.payment }}
+          </div>
+        </div>
+
+        <div class="col-md-2 title">商品种类</div>
+        <div class="col-md-4 data">
+          {{ form.kind }}
+        </div>
+
+        <div class="col-md-2 title rowHeight2x">其他信息</div>
+        <div class="col-md-10 data rowHeight2x">
+          {{ form.uinfo }}
+        </div>
+
+      </div>
+    </div>
+
+    {# 联系人信息 #}
+    <div class="panel panel-default">
+      <div class="panel-heading">联系人信息</div>
+      <div class="row data-type">
+
+        <div class="col-md-2 title">联系人</div>
+        <div class="col-md-4 data text">
+          {{ order.user.username }}
+        </div>
+
+        <div class="col-md-2 title">学生id</div>
+        <div class="col-md-4 data text">
+          {{ order.user.userid }}
+        </div>
+
+        <div class="col-md-2 title">邮箱</div>
+        <div class="col-md-4 data text">
+          {{ order.user.email }}
+        </div>
+
+        <div class="col-md-2 title">地址</div>
+        <div class="col-md-4 data text">
+          {{ order.user.location }}
+        </div>
+
+      </div>
+    </div>
+
+    {# 费用信息 #}
+    {#    <div class="panel panel-default">#}
+    {#      <div class="panel-heading">费用信息</div>#}
+    {#      <div class="row data-type">#}
+    {##}
+    {#        <div class="col-md-2 title">支付方式</div>#}
+    {#        <div class="col-md-4 data text">#}
+    {#          -#}
+    {#        </div>#}
+    {##}
+    {#        <div class="col-md-2 title">金额</div>#}
+    {#        <div class="col-md-4 data text">#}
+    {#          -#}
+    {#        </div>#}
+    {##}
+    {#      </div>#}
+    {#    </div>#}
+
+    {# 发票信息 #}
+    {#    <div class="panel panel-default">#}
+    {#      <div class="panel-heading">发票信息</div>#}
+    {#      <div class="row data-type">#}
+    {##}
+    {#        <div class="col-md-2 title">发票名称</div>#}
+    {#        <div class="col-md-4 data text">#}
+    {#          <div class="form-group form-inline">#}
+    {#            <div class="radio"><label><input type="radio" name="optionsRadios-a11" value="1"> 不需要发票</label></div>#}
+    {#            <div class="radio"><label><input type="radio" name="optionsRadios-a11" value="2"> 个人</label></div>#}
+    {#            <div class="radio"><label><input type="radio" name="optionsRadios-a11" value="3"> 内蒙古大学</label></div>#}
+    {#          </div>#}
+    {#          -#}
+    {#        </div>#}
+    {##}
+    {#        <div class="col-md-2 title">金额</div>#}
+    {#        <div class="col-md-4 data text">#}
+    {#          -#}
+    {#        </div>#}
+    {##}
+    {#      </div>#}
+    {#    </div>#}
+
+    {# 订单处理 #}
+    {#    <div class="panel panel-default">#}
+    {#      <div class="panel-heading">订单处理</div>#}
+    {#      <div class="row data-type">#}
+    {##}
+    {#        <div class="col-md-2 title">处理类型</div>#}
+    {#        <div class="col-md-10 data text">#}
+    {#          手动处理#}
+    {#        </div>#}
+    {##}
+    {#        <div class="col-md-2 title">支付方式</div>#}
+    {#        <div class="col-md-10 data">#}
+    {#          <div class="radio">#}
+    {#            <label class="radio-inline">#}
+    {#              <input type="radio" name="payment_type" id="id_payment_type_0" value="1"> 线上支付#}
+    {#            </label>#}
+    {#            <label class="radio-inline">#}
+    {#              <input type="radio" name="payment_type" id="id_payment_type_1" value="2"> 线下支付#}
+    {#            </label>#}
+    {#          </div>#}
+    {#        </div>#}
+    {##}
+    {#        <div class="col-md-2 title">发票名称</div>#}
+    {#        <div class="col-md-10 data">#}
+    {#          <div class="radio">#}
+    {#            <label class="radio-inline ">#}
+    {#              <input type="radio" name="invoice" id="id_invoice_0" value="1" required> 不需要发票#}
+    {#            </label>#}
+    {#            <label class="radio-inline">#}
+    {#              <input type="radio" name="invoice" id="id_invoice_1" value="2" required> 个人发票#}
+    {#            </label>#}
+    {#            <label class="radio-inline">#}
+    {#              <input type="radio" name="invoice" id="id_invoice_2" value="3" required> 内蒙古大学#}
+    {#            </label>#}
+    {#          </div>#}
+    {#        </div>#}
+    {##}
+    {#        <div class="col-md-2 title">订单状态</div>#}
+    {#        <div class="col-md-10 data">#}
+    {#          <div class="radio">#}
+    {#            <label class="radio-inline">#}
+    {#              <input type="radio" name="status" id="id_status_0" value="1"> 同意#}
+    {#            </label>#}
+    {#            <label class="radio-inline">#}
+    {#              <input type="radio" name="status" id="id_status_1" value="2"> 拒绝#}
+    {#            </label>#}
+    {#          </div>#}
+    {#        </div>#}
+    {##}
+    {#        <div class="col-md-2 title">状态改变</div>#}
+    {#        <div class="col-md-10 data line-height36">#}
+    {#          <div class="form-group form-inline">#}
+    {#            <div class="checkbox"><label><input type="checkbox" value="1"> 发送短信或邮件(仅本次有效)</label></div>#}
+    {#          </div>#}
+    {#        </div>#}
+    {##}
+    {#        <div class="col-md-2 title rowHeight2x">管理员备注</div>#}
+    {#        <div class="col-md-10 data rowHeight2x">#}
+    {#          {{ omf.ainfo }}#}
+    {#        </div>#}
+    {##}
+    {#      </div>#}
+    {#    </div>#}
+
+    {# 操作日志 #}
+    <div class="panel panel-default">
+      <div class="panel-heading">操作日志</div>
+      <!--数据列表-->
+      <table id="dataList" class="table table-bordered table-striped table-hover dataTable">
+        <thead>
+        <tr>
+          <th class="">订单id</th>
+          <th class="">用户姓名</th>
+          <th class="">内容</th>
+          <th class="">备注信息</th>
+          <th class="">处理时间</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for log in logs %}
+          <tr>
+            <td>{{ log.order_id }}</td>
+            <td>{{ log.user.username }}</td>
+            <td>{% if log.content == "process" %}处理订单(admin){% elif log.content == "update" %}更新订单(user){% else %}
+              新建订单(user){% endif %}</td>
+            <td>{% if log.content == "process" %}{{ order.order_org.ainfo|truncatechars:10 }}{% else %}
+              {{ order.uinfo|truncatechars:10 }}{% endif %}</td>
+            <td>{{ log.create_time }}</td>
+          </tr>
+        {% endfor %}
+
+        </tbody>
+      </table>
+      <!--数据列表/-->
+    </div>
+
+    {# 提交 #}
+    <div class="box-tools text-center">
+      <input type="submit" class="btn bg-maroon" value="提交">
+      <button type="button" class="btn bg-default" onclick="history.back(-1);">返回</button>
+    </div>
+  </form>
+
+{% endblock %}
+
+{% block scripts %}
+  {{ block.super }}
+  <script>
+    $(document).ready(function () {
+      // 激活导航位置
+      setSidebarActive("order-manage");
+    });
+
+    $(document).ready(function () {
+      // 激活导航位置
+      {#console.log($("#id_unit_price").val());#}
+      {#console.log($("#id_amount").val());#}
+      $("#id_unit_price").blur(function () {
+        $("#id_payment").val(($("#id_unit_price").val() * $("#id_amount").val()).toFixed(2));
+      });
+      $("#id_amount").blur(function () {
+        $("#id_payment").val(($("#id_unit_price").val() * $("#id_amount").val()).toFixed(2));
+      });
+    });
+
+  </script>
+{% endblock %}

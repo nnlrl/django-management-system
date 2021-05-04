@@ -1,0 +1,392 @@
+{% extends "index/base.html" %}
+{% load fun_filter %}
+
+{% block title %}LiLabIMU - Order{% endblock %}
+
+{% block content_header %} <h1>订单管理 <small>订单统计</small></h1> {% endblock %}
+
+{% block breadcrumb %}
+  {{ block.super }}
+  <li><span>订单管理</span></li>
+  <li><span>订单统计</span></li>
+{% endblock %}
+
+{% block page_content %}
+
+  <div class="row">
+    {% if request.user.is_staff %}
+      <div class="col-md-offset-5 col-md-5 text-right">
+        <form class="form-horizontal">
+          <div class="form-group">
+            <label for="inputPassword" class="col-sm-2 control-label">用户</label>
+            <div class="col-sm-10">
+              <select class="form-control" id="selected_username">
+                {% for user in all_users %}
+                  <option value="{{ user.userid }}">{{ user.username }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="col-md-2">
+        <a class="btn btn-default btn-block" id="get_data_admin">提交</a>
+      </div>
+      <hr>
+    {% endif %}
+
+    <div class="col-md-3 col-sm-6 col-xs-12">
+      <div class="info-box">
+        <span class="info-box-icon bg-aqua"><i class="fa fa-send-o"></i></span>
+
+        <div class="info-box-content">
+          <span class="info-box-text">全部订单 (过去一年)</span>
+          <span class="info-box-number" id="all_orders"></span>
+        </div>
+        <!-- /.info-box-content -->
+      </div>
+      <!-- /.info-box -->
+    </div>
+    <!-- /.col -->
+    <div class="col-md-3 col-sm-6 col-xs-12">
+      <div class="info-box">
+        <span class="info-box-icon bg-green"><i class="fa fa-hourglass-end"></i></span>
+
+        <div class="info-box-content">
+          <span class="info-box-text">已完成订单 (过去一年)</span>
+          <span class="info-box-number" id="processed_orders"></span>
+        </div>
+        <!-- /.info-box-content -->
+      </div>
+      <!-- /.info-box -->
+    </div>
+    <!-- /.col -->
+    <div class="col-md-3 col-sm-6 col-xs-12">
+      <div class="info-box">
+        <span class="info-box-icon bg-yellow"><i class="fa fa-hourglass-start"></i></span>
+
+        <div class="info-box-content">
+          <span class="info-box-text">未完成订单 (过去一年)</span>
+          <span class="info-box-number" id="unprocessed_orders"></span>
+        </div>
+        <!-- /.info-box-content -->
+      </div>
+      <!-- /.info-box -->
+    </div>
+    <!-- /.col -->
+    <div class="col-md-3 col-sm-6 col-xs-12">
+      <div class="info-box">
+        <span class="info-box-icon bg-red"><i class="fa fa-line-chart"></i></span>
+
+        <div class="info-box-content">
+          <span class="info-box-text">订单金额 (单位: 万元)</span>
+          <span class="info-box-number" id="payment"></span>
+        </div>
+        <!-- /.info-box-content -->
+      </div>
+      <!-- /.info-box -->
+    </div>
+    <!-- /.col -->
+  </div>
+
+  <hr>
+
+  <div class="row">
+    <div class="col-md-6">
+      <!-- AREA CHART -->
+      <div class="box box-primary">
+        <div class="box-header with-border">
+          <h3 class="box-title">Area Chart(累积) - 过去两周</h3>
+
+          <div class="box-tools pull-right">
+            <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i>
+            </button>
+            <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
+          </div>
+        </div>
+        <div class="box-body chart-responsive">
+          <div class="chart" id="area-chart" style="height: 300px;"></div>
+        </div>
+        <!-- /.box-body -->
+      </div>
+      <!-- /.box -->
+
+      <!-- DONUT CHART -->
+      <div class="box box-info">
+        <div class="box-header with-border">
+          <h3 class="box-title">Donut Chart</h3>
+
+          <div class="box-tools pull-right">
+            <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i>
+            </button>
+            <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
+          </div>
+        </div>
+        <div class="box-body chart-responsive">
+          <div class="chart" id="donut-chart" style="height: 300px;"></div>
+        </div>
+        <!-- /.box-body -->
+      </div>
+      <!-- /.box -->
+
+
+    </div>
+    <!-- /.col (LEFT) -->
+    <div class="col-md-6">
+      <!-- LINE CHART -->
+      <div class="box box-danger">
+        <div class="box-header with-border">
+          <h3 class="box-title">Line Chart(单日) - 过去两周</h3>
+
+          <div class="box-tools pull-right">
+            <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i>
+            </button>
+            <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
+          </div>
+        </div>
+        <div class="box-body chart-responsive">
+          <div class="chart" id="line-chart" style="height: 300px; position: relative;"></div>
+        </div>
+        <!-- /.box-body -->
+      </div>
+      <!-- /.box -->
+
+      <!-- BAR CHART -->
+      <div class="box box-success">
+        <div class="box-header with-border">
+          <h3 class="box-title">Bar Chart</h3>
+
+          <div class="box-tools pull-right">
+            <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i>
+            </button>
+            <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
+          </div>
+        </div>
+        <div class="box-body chart-responsive">
+          <div class="chart" id="bar-chart" style="height: 300px;"></div>
+        </div>
+        <!-- /.box-body -->
+      </div>
+      <!-- /.box -->
+
+    </div>
+    <!-- /.col (RIGHT) -->
+  </div>
+{% endblock %}
+
+{% block scripts %}
+  {{ block.super }}
+  <script>
+    $(document).ready(function () {
+      get_data({{ request.user.userid }});
+
+
+      $("#get_data_admin").click(function () {
+        // console.log($("#selected_username").val());
+        let url = "/order/statistics/ajax1/" + $("#selected_username").val();
+        $.get(url, function (data) {
+          if (data.code === 200) {
+            get_data($("#selected_username").val());
+          } else {
+            alert("未查询到相关订单");
+          }
+        })
+      })
+    })
+
+    function get_data(userid) {
+      let url = "/order/statistics/ajax/" + userid
+      $.get(url, function (data) {
+        console.log(data);
+        if (data.code === 200) {
+          $("#all_orders").text(data.data.all_orders_count);
+          $("#processed_orders").text(data.data.processed_orders_count);
+          $("#unprocessed_orders").text(data.data.unprocessed_orders_count);
+          $("#payment").text(Number(data.data.all_orders_payment).toFixed(2));
+          gen_chart(data.data);
+        } else {
+          alert("未查询到相关订单");
+        }
+      })
+    }
+
+    function gen_chart(data) {
+      // area-chart
+      var area_chart = echarts.init(document.getElementById("area-chart"));
+      area_chart.clear();
+      var area_options = {
+        title: {
+          text: ''
+        },
+        tooltip: {
+          trigger: 'axis',
+          axisPointer: {
+            type: 'cross',
+            label: {
+              backgroundColor: '#6a7985'
+            }
+          }
+        },
+        legend: {
+          data: ['已处理', '未处理']
+        },
+        toolbox: {
+          feature: {
+            saveAsImage: {}
+          }
+        },
+        grid: {
+          left: '3%',
+          right: '4%',
+          bottom: '3%',
+          containLabel: true
+        },
+        xAxis: [
+          {
+            type: 'category',
+            boundaryGap: false,
+            data: data.all.timestamp,
+          }
+        ],
+        yAxis: [
+          {
+            type: 'value'
+          }
+        ],
+        series: [
+          {
+            name: '已处理',
+            type: 'line',
+            stack: '总量',
+            areaStyle: {},
+            emphasis: {
+              focus: 'series'
+            },
+            data: data.processed.stack_count,
+          },
+          {
+            name: '未处理',
+            type: 'line',
+            stack: '总量',
+            areaStyle: {},
+            emphasis: {
+              focus: 'series'
+            },
+            data: data.unprocessed.stack_count,
+          },
+        ]
+      };
+      // 使用刚指定的配置项和数据显示图表。
+      area_chart.setOption(area_options);
+
+      // line-chart
+      var line_chart = echarts.init(document.getElementById("line-chart"));
+      line_chart.clear();
+      var line_options = {
+        title: {
+          text: ''
+        },
+        tooltip: {
+          trigger: 'axis'
+        },
+        legend: {
+          data: ["已处理", "未处理"]
+        },
+        grid: {
+          left: '3%',
+          right: '4%',
+          bottom: '3%',
+          containLabel: true
+        },
+        toolbox: {
+          feature: {
+            saveAsImage: {}
+          }
+        },
+        xAxis: {
+          type: 'category',
+          boundaryGap: false,
+          data: data.all.timestamp,
+        },
+        yAxis: {
+          type: 'value'
+        },
+        series: [
+          {
+            name: '已处理',
+            type: 'line',
+            stack: '总量',
+            data: data.processed.all_count,
+          },
+          {
+            name: '未处理',
+            type: 'line',
+            stack: '总量',
+            data: data.unprocessed.all_count,
+          }
+        ]
+      };
+      line_chart.setOption(line_options);
+
+      // donut-chart
+      var donut_chart = echarts.init(document.getElementById("donut-chart"));
+      donut_chart.clear();
+      var donut_options = {
+        legend: {
+          show: false,
+        },
+        toolbox: {
+          show: true,
+          feature: {
+            mark: {show: true},
+            dataView: {show: true, readOnly: false},
+            restore: {show: true},
+            saveAsImage: {show: true}
+          }
+        },
+        series: [
+          {
+            name: '面积模式',
+            type: 'pie',
+            radius: [20, 140],
+            center: ['50%', '50%'],
+            roseType: 'area',
+            itemStyle: {
+              borderRadius: 5
+            },
+            data: [
+              {value: data.all.kinds_count[0], name: data.all.all_kinds[0]},
+              {value: data.all.kinds_count[1], name: data.all.all_kinds[1]},
+              {value: data.all.kinds_count[2], name: data.all.all_kinds[2]},
+              {value: data.all.kinds_count[3], name: data.all.all_kinds[3]},
+              {value: data.all.kinds_count[4], name: data.all.all_kinds[4]},
+              {value: data.all.kinds_count[5], name: data.all.all_kinds[5]},
+
+            ]
+          }
+        ]
+      };
+      donut_chart.setOption(donut_options);
+
+      // bar-chart
+      var bar_chart = echarts.init(document.getElementById("bar-chart"));
+      bar_chart.clear();
+      var bar_options = {
+        xAxis: {
+          type: 'category',
+          data: data.all.all_kinds,
+        },
+        yAxis: {
+          type: 'value'
+        },
+        series: [{
+          data: data.all.kinds_count,
+          type: 'bar'
+        }]
+      };
+      bar_chart.setOption(bar_options);
+    }
+
+
+  </script>
+{% endblock %}

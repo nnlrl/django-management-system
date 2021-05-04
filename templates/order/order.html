@@ -1,0 +1,233 @@
+{% extends "index/base.html" %}
+{% load fun_filter %}
+{% load tz %}
+
+{% block title %}LiLabIMU - Order{% endblock %}
+
+{% block content_header %} <h1>订单管理 <small>全部订单</small></h1> {% endblock %}
+
+{% block breadcrumb %}
+  {{ block.super }}
+  <li><span>订单管理</span></li>
+  <li><span>全部订单</span></li>
+{% endblock %}
+
+{% block page_content %}
+  <div class="row">
+
+    <div class="box">
+      <div class="box-header">
+        <h3 class="box-title">全部订单</h3>
+        <hr>
+        <div class="pull-left">
+          <div class="form-group form-inline">
+            <div class="btn-group">
+              <a href="/order/add-order/" class="btn btn-default"><i class="fa fa-file-o"></i> 新建</a>
+              <button type="button" class="btn btn-default" title="刷新" onclick="window.location.reload();"><i
+                class="fa fa-refresh"></i> 刷新
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- /.box-header -->
+      <div class="box-body">
+
+        <table id="example1" class="table table-bordered table-striped">
+          <thead>
+          <tr>
+            <th>商品名称</th>
+            <th>联系人</th>
+            <th>公司名称</th>
+            <th>商品单价</th>
+            <th>商品数量</th>
+            <th>商品总价</th>
+            <th>订单状态</th>
+            <th>操作订单</th>
+          </tr>
+          </thead>
+          <tbody>
+          {% for order in orders %}
+            <tr>
+              <td>{{ order.name }}</td>
+              <td>{{ order.user.username }}</td>
+              <td>{{ order.company }}
+              </td>
+              <td>{{ order.unit_price }}</td>
+              <td>{{ order.amount }}</td>
+              <td>{{ order.payment }}</td>
+              <td>{% if order.status == "unprocessed" %}未处理{% elif order.status == "processed" %}已受理{% else %}
+                已关闭{% endif %}</td>
+              <td class="text-center">
+                <a href="/order/{{ order.id }}/" class="btn bg-olive btn-xs">详情</a>
+                <a href="/order/order-management/{{ order.id }}"
+                   class="btn bg-orange btn-xs {% if not request.user.is_staff %}disabled{% endif %}">
+                  处理
+                </a>
+                <a href="/order/delete/{{ order.id }}/"
+                   class="btn bg-maroon btn-xs {% if not request.user.is_staff and request.user != order.user %}disabled{% endif %}">删除</a>
+              </td>
+            </tr>
+          {% endfor %}
+          </tbody>
+          <tfoot>
+          <tr>
+            <th>商品名称</th>
+            <th>联系人</th>
+            <th>公司名称</th>
+            <th>商品单价</th>
+            <th>商品数量</th>
+            <th>商品总价</th>
+            <th>订单状态</th>
+            <th>操作订单</th>
+          </tr>
+          </tfoot>
+        </table>
+        {#        <div class="col-md-4 col-md-offset-4">#}
+        {#          <nav>#}
+        {#            <ul class="pager">#}
+        {#              {% if not orders.has_previous %}#}
+        {#                <li class="previous disabled"><a#}
+        {#                  href="#"><span aria-hidden="true">&laquo;</span> 上一页</a></li>#}
+        {#              {% else %}#}
+        {#                <li class="previous {% if not orders.has_previous %}disabled{% endif %}"><a#}
+        {#                  href="?page={{ orders.previous_page_number }}"><span aria-hidden="true">&laquo;</span> 上一页</a></li>#}
+        {#              {% endif %}#}
+        {#              <span>第{{ orders.number }}页 / 共{{ orders.paginator.num_pages }}页</span>#}
+        {#              {% if not orders.has_next %}#}
+        {#                <li class="next disabled"><a#}
+        {#                  href="#">下一页 <span aria-hidden="true">&raquo;</span></a></li>#}
+        {#              {% else %}#}
+        {#                <li class="next {% if not orders.has_next %}disabled{% endif %}"><a#}
+        {#                  href="?page={{ orders.next_page_number }}"> 上一页 <span aria-hidden="true">&raquo;</span></a></li>#}
+        {#              {% endif %}#}
+        {#            </ul>#}
+        {#          </nav>#}
+        {#          <br>#}
+        {#        </div>#}
+        {#        <div class="pull-left">#}
+        {#          <div class="form-group form-inline">#}
+        {#            <div class="btn-group">#}
+        {#              <a href="/order/add-order/" class="btn btn-default"><i class="fa fa-file-o"></i> 新建</a>#}
+        {#              <button type="button" class="btn btn-default" title="刷新" onclick="window.location.reload();"><i#}
+        {#                class="fa fa-refresh"></i> 刷新#}
+        {#              </button>#}
+        {#            </div>#}
+        {#          </div>#}
+        {#        </div>#}
+      </div>
+      <!-- /.box-body -->
+
+
+    </div>
+
+
+    <div class="box">
+      <div class="box-header">
+        <h3 class="box-title">未处理订单</h3>
+      </div>
+
+      <!-- /.box-header -->
+      <div class="box-body">
+
+        <table id="example2" class="table table-bordered table-striped">
+          <thead>
+          <tr>
+            <th>商品名称</th>
+            <th>联系人</th>
+            <th>公司名称</th>
+            <th>商品单价</th>
+            <th>商品数量</th>
+            <th>商品总价</th>
+            <th>订单状态</th>
+            <th>操作订单</th>
+          </tr>
+          </thead>
+          <tbody>
+          {% for order in orders_unprocessed %}
+            <tr>
+              <td>{{ order.name }}</td>
+              <td>{{ order.user.username }}</td>
+              <td>{{ order.company }}
+              </td>
+              <td>{{ order.unit_price }}</td>
+              <td>{{ order.amount }}</td>
+              <td>{{ order.payment }}</td>
+              <td>{% if order.status == "unprocessed" %}未处理{% elif order.status == "processed" %}已受理{% else %}
+                已关闭{% endif %}</td>
+              <td class="text-center">
+                <a href="/order/{{ order.id }}/" class="btn bg-olive btn-xs">详情</a>
+                <a href="/order/order-management/{{ order.id }}"
+                   class="btn bg-orange btn-xs {% if not request.user.is_staff %}disabled{% endif %}">
+                  处理
+                </a>
+                <a href="/order/delete/{{ order.id }}/"
+                   class="btn bg-maroon btn-xs {% if not request.user.is_staff and request.user != order.user %}disabled{% endif %}">删除</a>
+              </td>
+            </tr>
+          {% endfor %}
+          </tbody>
+          <tfoot>
+          <tr>
+            <th>商品名称</th>
+            <th>联系人</th>
+            <th>公司名称</th>
+            <th>商品单价</th>
+            <th>商品数量</th>
+            <th>商品总价</th>
+            <th>订单状态</th>
+            <th>操作订单</th>
+          </tr>
+          </tfoot>
+        </table>
+        {#        <div class="col-md-4 col-md-offset-4">#}
+        {#          <nav>#}
+        {#            <ul class="pager">#}
+        {#              {% if not orders.has_previous %}#}
+        {#                <li class="previous disabled"><a#}
+        {#                  href="#"><span aria-hidden="true">&laquo;</span> 上一页</a></li>#}
+        {#              {% else %}#}
+        {#                <li class="previous {% if not orders.has_previous %}disabled{% endif %}"><a#}
+        {#                  href="?page={{ orders.previous_page_number }}"><span aria-hidden="true">&laquo;</span> 上一页</a></li>#}
+        {#              {% endif %}#}
+        {#              <span>第{{ orders.number }}页 / 共{{ orders.paginator.num_pages }}页</span>#}
+        {#              {% if not orders.has_next %}#}
+        {#                <li class="next disabled"><a#}
+        {#                  href="#">下一页 <span aria-hidden="true">&raquo;</span></a></li>#}
+        {#              {% else %}#}
+        {#                <li class="next {% if not orders.has_next %}disabled{% endif %}"><a#}
+        {#                  href="?page={{ orders.next_page_number }}"> 上一页 <span aria-hidden="true">&raquo;</span></a></li>#}
+        {#              {% endif %}#}
+        {#            </ul>#}
+        {#          </nav>#}
+        {#          <br>#}
+        {#        </div>#}
+        {#        <div class="pull-left">#}
+        {#          <div class="form-group form-inline">#}
+        {#            <div class="btn-group">#}
+        {#              <a href="/order/add-order/" class="btn btn-default"><i class="fa fa-file-o"></i> 新建</a>#}
+        {#              <button type="button" class="btn btn-default" title="刷新" onclick="window.location.reload();"><i#}
+        {#                class="fa fa-refresh"></i> 刷新#}
+        {#              </button>#}
+        {#            </div>#}
+        {#          </div>#}
+        {#        </div>#}
+      </div>
+      <!-- /.box-body -->
+
+
+    </div>
+
+  </div>
+{% endblock %}
+
+{% block scripts %}
+  {{ block.super }}
+  <script>
+    $(function () {
+      $("#example1").DataTable();
+      $("#example2").DataTable();
+    });
+  </script>
+{% endblock %}

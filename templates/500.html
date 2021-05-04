@@ -1,0 +1,25 @@
+{% extends "index/base.html" %}
+
+{# 页面标题 #}
+{% block title %}LiLabIMU - 500{% endblock %}
+
+{# 页头信息 #}
+{% block content_header %} <h1>系统内部错误 <small>500 error</small></h1> {% endblock %}
+
+{# 主题内容 #}
+{% block page_content %}
+	<div class="error-page">
+		<h2 class="headline text-red"> 500</h2>
+
+		<div class="error-content">
+			<h3><i class="fa fa-warning text-red"></i> Oops! 页面程序有错误.</h3>
+
+			<p>
+				你访问的页面发生错误, 你可以联系管理员或者 <a href="/">返回到后台首页</a>
+			</p>
+
+		</div>
+		<!-- /.error-content -->
+	</div>
+	<!-- /.error-page -->
+{% endblock %}

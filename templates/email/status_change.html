@@ -1,0 +1,21 @@
+<p>Dear {{ username }},</p>
+<p>您的订单已经被受理, 结果为: {{ status }}, 受理者是: {{ manager }}.
+</p>
+<p>
+  该订单的详细信息:
+  订单编号 : {{ id }} <br>
+  商品名称 : {{ name }} <br>
+  商品单价 : {{ unit_price }} 元 <br>
+  商品数量 : {{ amount }} <br>
+  订单金额 : {{ payment }} 元 <br>
+  备注信息 : {{ uinfo }} <br>
+  发票信息 : {{ invoice }} <br>
+  物流信息 : {{ shipping_name }} <br>
+  物流单号 : {{ shipping_code }} <br>
+  管理员备注: {{ ainfo }} <br>
+</p>
+<p>您可以进入订单管理系统跟踪该订单的详细信息.</p>
+<p>如果您最近没有创建订单的话那么请您忽略此条邮件!</p>
+<p>Sincerely,</p>
+<p>The LiLabIMU Team</p>
+<p><small>Note: replies to this email address are not monitored.</small></p>

@@ -1,0 +1,272 @@
+{% extends "index/base.html" %}
+{% load fun_filter %}
+{% load tz %}
+
+{# 页面标题 #}
+{% block title %}LiLabIMU - {{ user.username }}{% endblock %}
+
+{# 页头信息 #}
+{% block content_header %} <h1>个人信息 <small>info</small></h1> {% endblock %}
+
+{% block breadcrumb %}
+  {{ block.super }}
+  <li><span>用户管理</span></li>
+  <li><span>个人信息</span></li>
+{% endblock %}
+
+{# 主题内容 #}
+{% block page_content %}
+
+  <div class="row">
+    <div class="col-md-3">
+
+      <!-- Profile Image -->
+      <div class="box box-primary">
+        <div class="box-body box-profile">
+          <img class="profile-user-img img-responsive img-circle" src="{{ user|gravatar:100 }}"
+               alt="User profile picture">
+
+          <h3 class="profile-username text-center">{{ user.username }}</h3>
+
+          <p class="text-muted text-center">{{ user.userid }} - {{ user.email }}</p>
+
+          <ul class="list-group list-group-unbordered">
+            <li class="list-group-item">
+              <b>已发布</b> <a class="pull-right">{{ posts|length }}</a>
+            </li>
+            <li class="list-group-item">
+              <b>全部订单</b> <a class="pull-right">{{ orders }}</a>
+            </li>
+            <li class="list-group-item">
+              <b>未处理</b> <a class="pull-right">{{ orders_unprocessed }}</a>
+            </li>
+          </ul>
+
+          {% if request.user.is_superuser %}
+            <a href="/admin/user/user/{{ user.userid }}/change/" class="btn btn-danger btn-block"><b>Edit[Admin]</b></a>
+          {% endif %}
+        </div>
+        <!-- /.box-body -->
+      </div>
+      <!-- /.box -->
+
+      <!-- About Me Box -->
+      <div class="box box-primary">
+        <div class="box-header with-border">
+          <h3 class="box-title">About Me</h3>
+
+        </div>
+        <!-- /.box-header -->
+        <div class="box-body">
+          <strong><i class="fa fa-book margin-r-5"></i> 教育经历</strong>
+
+          <p class="text-muted">
+            {{ user.education }}
+          </p>
+          {% if request.user.is_superuser %}
+            <a href="/admin/user/user/{{ user.userid }}/change/" class="btn btn-danger btn-block"><b>Edit[Admin]</b></a>
+          {% endif %}
+          <hr>
+          <strong><i class="fa fa-map-marker margin-r-5"></i> 住址</strong>
+          <p class="text-muted">{{ user.location }}</p>
+          {% if request.user.is_superuser %}
+            <a href="/admin/user/user/{{ user.userid }}/change/" class="btn btn-danger btn-block"><b>Edit[Admin]</b></a>
+          {% endif %}
+
+          {#					<hr>#}
+
+          {#					<strong><i class="fa fa-pencil margin-r-5"></i> Skills</strong>#}
+          {##}
+          {#					<p>#}
+          {#						<span class="label label-danger">UI Design</span>#}
+          {#						<span class="label label-success">Coding</span>#}
+          {#						<span class="label label-info">Javascript</span>#}
+          {#						<span class="label label-warning">PHP</span>#}
+          {#						<span class="label label-primary">Node.js</span>#}
+          {#					</p>#}
+
+          <hr>
+          <strong><i class="fa fa-file-text-o margin-r-5"></i> 简介</strong>
+          <p>{{ user.about_me }}</p>
+          {% if request.user.is_superuser %}
+            <a href="/admin/user/user/{{ user.userid }}/change/" class="btn btn-danger btn-block"><b>Edit[Admin]</b></a>
+          {% endif %}
+        </div>
+        <!-- /.box-body -->
+      </div>
+      <!-- /.box -->
+    </div>
+    <!-- /.col -->
+    <div class="col-md-9">
+      <div class="nav-tabs-custom">
+        <ul class="nav nav-tabs">
+          <li class="active"><a href="#activity" data-toggle="tab" aria-expanded="true">Activity</a></li>
+          {% if request.user.userid == user.userid %}
+            <li class=""><a href="#settings" data-toggle="tab" aria-expanded="false">Settings</a></li>
+          {% endif %}
+        </ul>
+        <div class="tab-content">
+
+          <div class="tab-pane active" id="activity">
+            {% for post in posts %}
+              <!-- Post -->
+              <div class="post clearfix">
+                <div class="user-block">
+                  <img class="img-circle img-bordered-sm" src="{{ post.author|gravatar:40 }}" alt="User Image">
+                  <span class="username">
+                          <span>{{ post.title }}</span>
+                        </span>
+                  <span class="description">{{ post.author.username }} - {{ post.timestamp }}</span>
+                </div>
+                <!-- /.user-block -->
+                <p>
+                  <a href="/post/{{ post.id }}" style="color: #666">{{ post.introduction }}</a>
+                </p>
+
+                {#                <form class="form-horizontal">#}
+                {#                  <div class="form-group margin-bottom-none">#}
+                {#                    <div class="col-sm-9">#}
+                {#                      <input class="form-control input-sm" placeholder="评论">#}
+                {#                    </div>#}
+                {#                    <div class="col-sm-3">#}
+                {#                      <button type="submit" class="btn btn-danger pull-right btn-block btn-sm">发表</button>#}
+                {#                    </div>#}
+                {#                  </div>#}
+                {#                </form>#}
+                <span>
+                  <i class="fa fa-commenting"></i> {{ post.comment_set.all|length }}评论
+                </span>
+                <span>
+                  <i class="fa fa-thumbs-o-up"></i> {{ post.likes.all|length }}喜欢
+                </span>
+
+                <div class="btn-group pull-right">
+                  <a href="/post/{{ post.id }}" class="btn btn-info btn-xs">详情</a>
+                  <a href="/post/edit/{{ post.id }}"
+                     class="btn btn-warning btn-xs {% if not request.user.is_staff and request.user.userid != post.author.userid %}disabled{% endif %}">修改</a>
+                  <button onclick="on_delete({{ post.id }})"
+                          class="btn btn-danger btn-xs {% if not request.user.is_staff and request.user.userid != post.author.userid %}disabled{% endif %}">
+                    删除
+                  </button>
+                </div>
+              </div>
+              <!-- /.post -->
+            {% endfor %}
+
+            {# 分页 #}
+            <nav>
+              <ul class="pager">
+                {% if not posts.has_previous %}
+                  <li class="previous disabled"><a
+                    href="#"><span aria-hidden="true">&laquo;</span> 上一页</a></li>
+                {% else %}
+                  <li class="previous {% if not posts.has_previous %}disabled{% endif %}"><a
+                    href="?page={{ posts.previous_page_number }}"><span aria-hidden="true">&laquo;</span> 上一页</a>
+                  </li>
+                {% endif %}
+                <span>第{{ posts.number }}页 / 共{{ posts.paginator.num_pages }}页</span>
+                {% if not posts.has_next %}
+                  <li class="next disabled"><a
+                    href="#">下一页 <span aria-hidden="true">&raquo;</span></a></li>
+                {% else %}
+                  <li class="next {% if not posts.has_next %}disabled{% endif %}"><a
+                    href="?page={{ posts.next_page_number }}"> 上一页 <span aria-hidden="true">&raquo;</span></a></li>
+                {% endif %}
+              </ul>
+            </nav>
+
+          </div>
+
+          {% if request.user.userid == user.userid %}
+            <div class="tab-pane" id="settings">
+              <form class="form-horizontal" method="post" action novalidate>
+                {% csrf_token %}
+                <div class="form-group {% if form.username.errors %}has-error{% endif %}">
+                  <div class="col-sm-2 text-right">
+                    {{ form.username.label_tag }}
+                  </div>
+                  <div class="col-sm-10">
+                    {{ form.username }}
+                  </div>
+                  {% if form.username.errors %}
+                    <p class="help-block">
+                      {{ form.username.errors.0 }}
+                    </p>
+                  {% endif %}
+                </div>
+                <div class="form-group {% if form.education.errors %}has-error{% endif %}">
+                  <div class="col-sm-2 text-right">
+                    {{ form.education.label_tag }}
+                  </div>
+                  <div class="col-sm-10">
+                    {{ form.education }}
+                  </div>
+                  {% if form.education.errors %}
+                    <p class="help-block">
+                      {{ form.education.errors.0 }}
+                    </p>
+                  {% endif %}
+                </div>
+                <div class="form-group {% if form.address.errors %}has-error{% endif %}">
+                  <div class="col-sm-2 text-right">
+                    {{ form.address.label_tag }}
+                  </div>
+                  <div class="col-sm-10">
+                    {{ form.address }}
+                  </div>
+                  {% if form.address.errors %}
+                    <p class="help-block">
+                      {{ form.address.errors.0 }}
+                    </p>
+                  {% endif %}
+                </div>
+                <div class="form-group {% if form.about_me.errors %}has-error{% endif %}">
+                  <div class="col-sm-2 text-right">
+                    {{ form.about_me.label_tag }}
+                  </div>
+                  <div class="col-sm-10">
+                    {{ form.about_me }}
+                  </div>
+                  {% if form.about_me.errors %}
+                    <p class="help-block">
+                      {{ form.about_me.errors.0 }}
+                    </p>
+                  {% endif %}
+                </div>
+                <div class="form-group">
+                  <div class="col-sm-offset-2 col-sm-10">
+                    <button type="submit" class="btn btn-danger">提交</button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          {% endif %}
+          <!-- /.tab-pane -->
+        </div>
+        <!-- /.tab-content -->
+      </div>
+      <!-- /.nav-tabs-custom -->
+    </div>
+    <!-- /.col -->
+  </div>
+  <!-- /.row -->
+
+{% endblock %}
+
+{% block scripts %}
+  {{ block.super }}
+  <script>
+    let on_delete = function (postid) {
+      if (confirm("确认删除文章?")) {
+        let path = "/post/delete/" + postid;
+        $.get(path, function (data) {
+          if (data.code === 200) {
+            window.location.href = '/user/{{ request.user.userid }}';
+          } else {
+            alert("此文章不存在, 请重试");
+          }
+        });
+      }
+    }
+  </script>
+{% endblock %}

@@ -1,0 +1,3 @@
+WARNING 2021-04-15 01:18:21,576 log log_response 26860 140028335578440 Not Found: /manager/html
+WARNING 2021-04-15 02:45:28,292 log log_response 26860 140028335578440 Not Found: /api/jsonws/invoke
+WARNING 2021-04-15 02:45:30,548 log log_response 26860 140028335578440 Not Found: /wp-content/plugins/wp-file-manager/readme.txt

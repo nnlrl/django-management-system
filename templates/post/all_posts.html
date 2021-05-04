@@ -1,0 +1,98 @@
+{% extends "index/base.html" %}
+{% load fun_filter %}
+
+{% block title %}LiLabIMU - All Post{% endblock %}
+
+{% block content_header %} <h1>文章列表 <small>all post</small></h1> {% endblock %}
+
+{% block breadcrumb %}
+  {{ block.super }}
+  <li><span>文章管理</span></li>
+  <li><span>文章列表</span></li>
+{% endblock %}
+
+{% block page_content %}
+  <div class="row">
+    {% for post in posts %}
+      <div class="col-md-12">
+        <!-- Box Comment -->
+        <div class="box box-widget">
+          <div class="box-header with-border">
+            <div class="user-block">
+              <img class="img-circle" src="{{ post.author|gravatar:40 }}" alt="User Image">
+              <span class="username"><a href="#">{{ post.author.username }}</a></span>
+              <span class="description">{{ post.timestamp }}</span>
+            </div>
+            <!-- /.user-block -->
+            <div class="box-tools">
+              <button type="button" class="btn btn-box-tool" data-widget="collapse" title=""
+                      data-original-title="最小化"><i class="fa fa-minus"></i>
+              </button>
+              <button type="button" class="btn btn-box-tool" data-widget="remove" title=""
+                      data-original-title="关闭窗口"><i class="fa fa-times"></i></button>
+            </div>
+            <!-- /.box-tools -->
+          </div>
+          <!-- /.box-header -->
+          <div class="box-body">
+            <!-- post text -->
+            <a href="/post/{{ post.id }}" style="color: #666;">
+              <h4>{{ post.title }}</h4> <br>
+              简介: {{ post.introduction }} <br>
+              {% if post.body_html %}
+                内容: {{ post.body_html|safe|truncatechars_html:100 }}...
+              {% else %}
+                内容: {{ post.body|truncatechars:100 }}...
+              {% endif %}
+            </a>
+            <hr>
+            <!-- Social sharing buttons -->
+            <div class="btn-group pull-right">
+              <a href="/post/{{ post.id }}" class="btn btn-info btn-xs">详情</a>
+              <a href="/post/edit/{{ post.id }}"
+                 class="btn btn-warning btn-xs {% if not request.is_staff and request.user != post.author %}disabled{% endif %}">修改</a>
+              <a href="/post/delete/{{ post.id }}"
+                 class="btn btn-danger btn-xs {% if not request.is_staff and request.user != post.author %}disabled{% endif %}">删除</a>
+            </div>
+            <span
+              class="pull-left text-muted">
+              <span>
+                  <i class="fa fa-commenting"></i> {{ post.comment_set.count }}评论
+              </span>
+              <span>
+                  <i class="fa fa-thumbs-o-up"></i> {{ post.likes.count }}喜欢
+              </span>
+            </span>
+          </div>
+          <!-- /.box-body -->
+        </div>
+        <!-- /.box -->
+      </div>
+    {% endfor %}
+
+    {# 分页 #}
+    <div class="col-md-12">
+      <nav>
+        <ul class="pager">
+          {% if not posts.has_previous %}
+            <li class="previous disabled"><a
+              href="#"><span aria-hidden="true">&laquo;</span> 上一页</a></li>
+          {% else %}
+            <li class="previous {% if not posts.has_previous %}disabled{% endif %}"><a
+              href="?page={{ posts.previous_page_number }}"><span aria-hidden="true">&laquo;</span> 上一页</a>
+            </li>
+          {% endif %}
+          <span>第{{ posts.number }}页 / 共{{ posts.paginator.num_pages }}页</span>
+          {% if not posts.has_next %}
+            <li class="next disabled"><a
+              href="#">下一页 <span aria-hidden="true">&raquo;</span></a></li>
+          {% else %}
+            <li class="next {% if not posts.has_next %}disabled{% endif %}"><a
+              href="?page={{ posts.next_page_number }}"> 上一页 <span aria-hidden="true">&raquo;</span></a></li>
+          {% endif %}
+        </ul>
+      </nav>
+    </div>
+
+  </div>
+{% endblock %}

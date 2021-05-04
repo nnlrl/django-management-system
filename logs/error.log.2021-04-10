@@ -1,0 +1,8 @@
+WARNING 2021-04-11 00:45:05,603 log log_response 26860 140028340644936 Not Found: /pmd/index.php
+WARNING 2021-04-11 01:36:00,222 log log_response 26860 140028340644936 Not Found: /phpmyadmin/index.php
+WARNING 2021-04-11 07:28:43,821 log log_response 26860 140028340644936 Not Found: /boaform/admin/formLogin
+WARNING 2021-04-11 07:31:28,265 log log_response 26860 140028340644936 Not Found: /solr/admin/info/system
+WARNING 2021-04-11 07:31:30,304 log log_response 26860 140028340644936 Not Found: /Autodiscover/Autodiscover.xml
+WARNING 2021-04-11 13:01:47,051 log log_response 26860 140028340644936 Not Found: /favicon.ico
+WARNING 2021-04-11 13:06:16,685 log log_response 26860 140028340644936 Not Found: /favicon.ico
+WARNING 2021-04-11 23:36:28,627 log log_response 26860 140028340644936 Not Found: /favicon.ico

@@ -1,0 +1,2 @@
+WARNING 2021-04-09 13:23:46,737 log log_response 15834 140380713716552 Forbidden (CSRF cookie not set.): /
+WARNING 2021-04-09 14:58:41,653 log log_response 15834 140380677783624 Forbidden (CSRF token missing or incorrect.): /user/register/

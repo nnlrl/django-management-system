@@ -1,0 +1,110 @@
+{% extends "index/base.html" %}
+
+{% block title %}LiLabIMU - Register{% endblock %}
+
+{% block content_header %} <h1>注册 <small>Register</small></h1> {% endblock %}
+
+{% block breadcrumb %}
+  {{ block.super }}
+  <li><span>用户管理</span></li>
+  <li><span>用户注册</span></li>
+{% endblock %}
+
+{% block page_content %}
+  <div class="row">
+    <div class="col-md-4 col-md-offset-4">
+      <form action method="post" novalidate>
+        {% csrf_token %}
+        <div class="form-group {% if form.userid.errors %}has-error{% endif %}">
+          {{ form.userid.label_tag }}
+          <div class="input-group">
+            <span class="input-group-addon"><span class="glyphicon glyphicon-user"></span></span>
+            {{ form.userid }}
+          </div>
+          {% if form.userid.errors %}
+            <p class="help-block">{{ form.userid.errors.0 }}</p>
+          {% endif %}
+        </div>
+        <div class="form-group {% if form.username.errors %}has-error{% endif %}">
+          {{ form.username.label_tag }}
+          <div class="input-group">
+            <span class="input-group-addon"><span class="glyphicon glyphicon-user"></span></span>
+            {{ form.username }}
+          </div>
+          {% if form.username.errors %}
+            <p class="help-block">{{ form.username.errors.0 }}</p>
+          {% endif %}
+        </div>
+        <div class="form-group {% if form.email.errors %}has-error{% endif %}">
+          {{ form.email.label_tag }}
+          <div class="input-group">
+            <span class="input-group-addon">@</span>
+            {{ form.email }}
+          </div>
+          {% if form.email.errors %}
+            <p class="help-block">{{ form.email.errors.0 }}</p>
+          {% endif %}
+        </div>
+        <div class="form-group {% if form.password1.errors %}has-error{% endif %}">
+          {{ form.password1.label_tag }}
+          <div class="input-group">
+            {{ form.password1 }}
+            <span class="input-group-addon"><span class="glyphicon glyphicon-tag"></span></span>
+          </div>
+          {% if form.password1.errors %}
+            <p class="help-block">{{ form.password1.errors.0 }}</p>
+          {% endif %}
+        </div>
+        <div class="form-group {% if form.password2.errors %}has-error{% endif %}">
+          {{ form.password2.label_tag }}
+          {{ form.password2 }}
+          {% if form.password2.errors %}
+            <p class="help-block">{{ form.password2.errors.0 }}</p>
+          {% endif %}
+        </div>
+        <br>
+        <div class="form-group {% if form.captcha.errors %}has-error{% endif %}">
+          <div class="row" style="margin-top: -10px;">
+            <div class="col-md-8">
+              <input autocapitalize="off" autocomplete="off" autocorrect="off" spellcheck="false" id="id_captcha_1"
+                     class="form-control" placeholder="验证码"
+                     name="captcha_1" type="text">
+            </div>
+            <div class="col-md-4 ">
+              <img src="{{ image_url }}" alt="captcha" class="captcha" style="cursor: pointer;">
+            </div>
+            <input id="id_captcha_0" name="captcha_0" type="hidden" value="{{ hashkey }}">
+          </div>
+          {% if form.captcha.errors %}
+            <p class="help-block">
+              {{ form.captcha.errors.0 }}
+            </p>
+          {% endif %}
+        </div>
+        <br>
+        <a href="/user/login" class="btn btn-link pull-left">已有账号, 去登陆</a>
+        <input type="submit" value="注册" class="btn btn-primary pull-right">
+      </form>
+    </div>
+  </div>
+
+{% endblock %}
+
+{% block scripts %}
+  {{ block.super }}
+  <script>
+      //点击刷新验证码
+      $(function () {
+          // ajax刷新
+          $('.captcha').click(function () {
+              console.log('click');
+              $.get("/user/refresh_captcha",
+                  function (result) {
+                      $('.captcha').attr('src', result['image_url']);
+                      $('#id_captcha_0').val(result['hashkey'])
+                  });
+          });
+
+      })
+  </script>
+{% endblock %}

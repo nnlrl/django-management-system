@@ -1,0 +1,214 @@
+{% extends "index/base.html" %}
+{% load fun_filter %}
+{% load tz %}
+
+{% block title %}LiLabIMU - Post{% endblock %}
+
+{% block content_header %} <h1>文章内容 <small>detail</small></h1> {% endblock %}
+
+{% block breadcrumb %}
+  {{ block.super }}
+  <li><span>文章管理</span></li>
+  <li><span>查看文章</span></li>
+{% endblock %}
+
+{% block page_content %}
+  <div class="row">
+    <div class="col-md-12">
+      <!-- Box Comment -->
+      <div class="box box-widget">
+        <div class="box-header with-border">
+          <div class="user-block">
+            <img class="img-circle" src="{{ post.author|gravatar:40 }}" alt="User Image">
+            <span class="username"><a href="/user/{{ post.author.userid }}">{{ post.author.username }}</a></span>
+            <span class="description">{{ post.timestamp }}</span>
+          </div>
+          <!-- /.user-block -->
+          <div class="box-tools">
+            <button type="button" class="btn btn-box-tool" data-toggle="tooltip" title="Mark as read">
+              <i class="fa fa-circle-o"></i></button>
+            <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i>
+            </button>
+            <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
+          </div>
+          <!-- /.box-tools -->
+        </div>
+        <!-- /.box-header -->
+        <div class="box-body">
+          <!-- post text -->
+          <div>
+            <h3>{{ post.title }}</h3>
+          </div>
+          <hr>
+          <div>
+            <h3>介绍:</h3>
+            <p>{{ post.introduction }}</p>
+          </div>
+          <hr>
+          {% if post.body_html %}
+            {% autoescape off %}
+              {{ post.body_html }}
+            {% endautoescape %}
+          {% else %}
+            {{ post.body }}
+          {% endif %}
+
+          <hr>
+
+          <!-- Social sharing buttons -->
+          <button type="button" class="btn btn-default btn-xs" onclick="share_post()"><i class="fa fa-share"></i> 转发
+          </button>
+          <button type="button" class="btn btn-default btn-xs" id="like" onclick="change_like(1)"></button>
+          {% if post.author == request.user %}
+            <a href="/post/edit/{{ post.id }}/" class="btn btn-default btn-xs"><i class="fa fa-wrench"></i> 修改</a>
+          {% endif %}
+          <span class="pull-right text-muted"><span id="num_like"></span> likes - {{ count }} Comments</span>
+        </div>
+        <!-- /.box-body -->
+        <div class="box-footer box-comments">
+
+          {% for comment in comments %}
+            <div class="box-comment">
+
+              <!-- User image -->
+              <img class="img-circle img-sm" src="{{ comment.author|gravatar:40 }}" alt="User Image">
+
+              <div class="comment-text">
+                 <span class="username">
+                        {{ comment.author.username }}
+                        <span class="text-muted pull-right">{% localtime %}
+                          {{ comment.timestamp }}{% endlocaltime %}</span>
+                 </span>
+                <!-- /.username -->
+                {% if comment.body_html %}
+                  {{ comment.body_html }}
+                {% else %}
+                  {{ comment.body }}
+                {% endif %}
+                <br>
+                <a href="/comment/delete/{{ post.id }}"
+                   class="btn btn-danger btn-xs pull-right {% if not request.is_staff and request.user.userid != post.author.userid %}disabled{% endif %}">删除</a>
+              </div>
+              <!-- /.comment-text -->
+            </div>
+            <!-- /.box-comment -->
+          {% endfor %}
+
+
+          {#          {% if is_paginated %}#}
+          <nav>
+            <ul class="pager">
+              {% if not comments.has_previous %}
+                <li class="previous disabled"><a
+                  href="#"><span aria-hidden="true">&laquo;</span> 上一页</a></li>
+              {% else %}
+                <li class="previous {% if not comments.has_previous %}disabled{% endif %}"><a
+                  href="?page={{ comments.previous_page_number }}"><span aria-hidden="true">&laquo;</span> 上一页</a></li>
+              {% endif %}
+              <span>第{{ comments.number }}页 / 共{{ comments.paginator.num_pages }}页</span>
+              {% if not comments.has_next %}
+                <li class="next disabled"><a
+                  href="#">下一页 <span aria-hidden="true">&raquo;</span></a></li>
+              {% else %}
+                <li class="next {% if not comments.has_next %}disabled{% endif %}"><a
+                  href="?page={{ comments.next_page_number }}"> 上一页 <span aria-hidden="true">&raquo;</span></a></li>
+              {% endif %}
+            </ul>
+          </nav>
+          {#          {% endif %}#}
+
+        </div>
+        <!-- /.box-footer -->
+        <div class="box-footer">
+          <form class="form-horizontal" method="post" action>
+            {% csrf_token %}
+            <div class="form-group margin-bottom-none">
+              <div class="col-sm-10 {% if form.body.errors %}has-error{% endif %}">
+                {{ form.body }}
+                {% if form.body.errors %}
+                  <p class="help-block">
+                    {{ form.body.errors.0 }}
+                  </p>
+                {% endif %}
+              </div>
+              <div class="col-sm-2">
+                <button type="submit" class="btn btn-danger pull-right btn-block btn-md">Send</button>
+              </div>
+            </div>
+          </form>
+        </div>
+        <!-- /.box-footer -->
+      </div>
+      <!-- /.box -->
+    </div>
+
+  </div>
+
+
+
+{% endblock %}
+
+
+{% block scripts %}
+  {{ block.super }}
+  <script>
+    var change_like = function (action) {
+      $.ajax({
+        url: '/post/like/',
+        // 为了避免加入csrf_token令牌，所以使用GET请求
+        type: 'GET',
+        // 返回的数据用于创建一个点赞记录
+        data: {
+          post_id:{{ post.id }},
+          action: action
+        },
+        cache: false,
+        success: function (data) {
+          console.log(data);
+          if (data['code'] === 200) {
+            // 更新点赞状态
+            // 通过class找到对应的标签
+            var like = $("#like");
+            var num_like = $("#num_like");
+            if (data['is_liked']) {
+              {#icon.removeClass("fa-thumbs-o-up");#}
+              {#icon.addClass("fa-thumbs-o-down");#}
+              like.html('<i class="fa fa-thumbs-o-down" id="icon"></i> 不喜欢');
+              num_like.text(Number(num_like.text()) + 1);
+              if (action === 0) {
+                num_like.text(data["total_like"]);
+              }
+
+            } else {
+              {#icon.removeClass("fa-thumbs-o-down");#}
+              {#icon.addClass("fa-thumbs-o-up");#}
+              like.html('<i class="fa fa-thumbs-o-up" id="icon"></i> 喜欢');
+              num_like.text(Number(num_like.text()) - 1);
+              if (action === 0) {
+                num_like.text(data["total_like"]);
+              }
+            }
+          } else {
+            alert(data["code"])
+          }
+        },
+        error: function (data) {
+          console.log(data)
+        }
+      });
+      return false;
+    };
+
+    var share_post = function () {
+      if (confirm("您确定要转发吗")) {
+        $.get("/post/share/{{ post.id }}/", function () {
+          window.location.href = "/user/{{ request.user.userid }}/";
+        })
+      }
+    }
+
+    $(function () {
+      change_like(0);
+    })
+  </script>
+{% endblock %}

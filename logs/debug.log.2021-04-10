@@ -1,0 +1,3 @@
+WARNING 2021-04-10 03:14:04,771 log log_response 26861 140028340308808 Forbidden (CSRF cookie not set.): /
+ERROR 2021-04-10 05:36:44,238 exception response_for_exception 26861 140028340308808 Invalid HTTP_HOST header: '_:80'. The domain name provided is not valid according to RFC 1034/1035.
+ERROR 2021-04-10 19:39:25,780 exception response_for_exception 26861 140028340308808 Invalid HTTP_HOST header: '_:80'. The domain name provided is not valid according to RFC 1034/1035.

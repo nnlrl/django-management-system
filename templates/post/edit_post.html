@@ -1,0 +1,89 @@
+{% extends "index/base.html" %}
+
+{% block title %}LiLabIMU - Edit Post{% endblock %}
+
+{% block content_header %} <h1>修改文章 <small>edit post</small></h1> {% endblock %}
+
+{% block breadcrumb %}
+  {{ block.super }}
+  <li><span>文章管理</span></li>
+  <li><span>文章编辑</span></li>
+{% endblock %}
+
+{% block page_content %}
+  <div class="row">
+    <div class="col-md-12">
+
+      <div class="box">
+        <div class="box-header">
+          <h3 class="box-title">Markdown Editor
+            <small>Use Markdown</small>
+          </h3>
+          <!-- tools box -->
+          <div class="pull-right box-tools">
+            <button type="button" class="btn btn-default btn-sm" data-widget="collapse" data-toggle="tooltip" title=""
+                    data-original-title="Collapse">
+              <i class="fa fa-minus"></i></button>
+            <button type="button" class="btn btn-default btn-sm" data-widget="remove" data-toggle="tooltip"
+                    title="Remove">
+              <i class="fa fa-times"></i></button>
+          </div>
+          <!-- /. tools -->
+        </div>
+        <!-- /.box-header -->
+        <div class="box-body pad" style="display: block;">
+
+          <form action method="post" novalidate>
+            {% csrf_token %}
+            <div class="form-group {% if form.title.errors %}has-error{% endif %}">
+              {{ form.title.label_tag }}
+              {{ form.title }}
+              {% if form.title.errors %}
+                <p class="help-block">
+                  {{ form.title.errors.0 }}
+                </p>
+              {% endif %}
+            </div>
+            <div class="form-group {% if form.introduction.errors %}has-error{% endif %}">
+              {{ form.introduction.label_tag }}
+              {{ form.introduction }}
+              {% if form.introduction.errors %}
+                <p class="help-block">
+                  {{ form.introduction.errors.0 }}
+                </p>
+              {% endif %}
+            </div>
+            <div class="form-group {% if form.body.errors %}has-error{% endif %}">
+              {{ form.body.label_tag }}
+              <textarea id="{{ form.body.id_for_label }}" name="body"
+                        style="width: 100%; height: 200px; font-size: 14px; line-height: 18px; border: 1px solid rgb(221, 221, 221); padding: 10px; resize: none; display: block;"
+                        class="md-input" rows="5">{{ post.body }}</textarea>
+              {% if form.body.errors %}
+                <p class="help-block">
+                  {{ form.body.errors.0 }}
+                </p>
+              {% endif %}
+            </div>
+            <br>
+            <input type="submit" class="btn btn-primary pull-right" value="提交">
+
+          </form>
+
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block scripts %}
+  {{ block.super }}
+  <script>
+      $(function () {
+          $("#{{ form.body.id_for_label }}").markdown({
+              language: 'zh',
+              autofocus: true,
+              savable: false
+          });
+      });
+  </script>
+{% endblock %}

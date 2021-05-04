@@ -1,0 +1,275 @@
+{% extends "index/base.html" %}
+{% load fun_filter %}
+{% load tz %}
+{% load cache %}
+
+{% block title %}LiLabIMU - Index{% endblock %}
+
+{% block content_header %}
+
+  <h1>Hello, {% if request.user.is_authenticated %}{{ request.user.username }}{% else %}Stranger{% endif %}!</h1>
+
+{% endblock %}
+
+{% block page_content %}
+  <div class="row">
+    <div class="col-lg-3 col-xs-6">
+      <!-- small box -->
+      <div class="small-box bg-aqua">
+        <div class="inner">
+          <h3>{{ posts|length }}</h3>
+
+          <p>全部文章</p>
+        </div>
+        <div class="icon">
+          <i class="fa fa-folder"></i>
+        </div>
+        <a href="/post/" class="small-box-footer">详细 <i
+          class="fa fa-arrow-circle-right"></i></a>
+      </div>
+    </div>
+    <!-- ./col -->
+    <div class="col-lg-3 col-xs-6">
+      <!-- small box -->
+      <div class="small-box bg-green">
+        <div class="inner">
+          <h3>{{ my_posts }}</h3>
+
+          <p>我的文章</p>
+        </div>
+        <div class="icon">
+          <i class="fa fa-folder-open"></i>
+        </div>
+        <a href="/post/" class="small-box-footer">详细 <i class="fa fa-arrow-circle-right"></i></a>
+      </div>
+    </div>
+    <!-- ./col -->
+    <div class="col-lg-3 col-xs-6">
+      <!-- small box -->
+      <div class="small-box bg-yellow">
+        <div class="inner">
+          <h3>{{ orders }}</h3>
+
+          <p>全部订单</p>
+        </div>
+        <div class="icon">
+          <i class="fa fa-users"></i>
+        </div>
+        <a href="/order/" class="small-box-footer">详细 <i class="fa fa-arrow-circle-right"></i></a>
+      </div>
+    </div>
+    <!-- ./col -->
+    <div class="col-lg-3 col-xs-6">
+      <!-- small box -->
+      <div class="small-box bg-red">
+        <div class="inner">
+          <h3>{{ my_orders|length }}</h3>
+
+          <p>我的订单</p>
+        </div>
+        <div class="icon">
+          <i class="fa fa-user"></i>
+        </div>
+        <a href="/order/" class="small-box-footer" disabled>详细 <i class="fa fa-arrow-circle-right"></i></a>
+      </div>
+    </div>
+    <!-- ./col -->
+
+  </div>
+
+  <div class="row">
+    <div class="col-md-12">
+      <div class="nav-tabs-custom">
+        <ul class="nav nav-tabs">
+          <li class="active"><a href="#posts" data-toggle="tab" aria-expanded="false">全部文章</a></li>
+          <li class=""><a href="#orders" data-toggle="tab" aria-expanded="false">全部订单</a></li>
+          {#        <li class="pull-right clearfix"><a class="disabled">Total: {{ count }}</a></li>#}
+        </ul>
+        <div class="tab-content">
+
+          <div class="tab-pane active" id="posts">
+            {% for post in page %}
+              <!-- Post -->
+              <div class="post clearfix">
+                <div class="user-block">
+                  <img class="img-circle img-bordered-sm" src="{{ post.author|gravatar:40 }}" alt="User Image">
+                  <span class="username">
+                          <span>{{ post.title }}</span>
+                        </span>
+                  <span class="description">{{ post.author.username }} - {{ post.timestamp }}</span>
+                </div>
+                <!-- /.user-block -->
+                <p>
+                  <a href="/post/{{ post.id }}" style="color: #666">{{ post.introduction }}</a>
+                </p>
+
+                {#                <form class="form-horizontal">#}
+                {#                  <div class="form-group margin-bottom-none">#}
+                {#                    <div class="col-sm-9">#}
+                {#                      <input class="form-control input-sm" placeholder="评论">#}
+                {#                    </div>#}
+                {#                    <div class="col-sm-3">#}
+                {#                      <button type="submit" class="btn btn-danger pull-right btn-block btn-sm">发表</button>#}
+                {#                    </div>#}
+                {#                  </div>#}
+                {#                </form>#}
+                <span>
+                  <i class="fa fa-commenting"></i> {{ post.comment_set.all|length }}评论
+                </span>
+                <span>
+                  <i class="fa fa-thumbs-o-up"></i> {{ post.likes.all|length }}喜欢
+                </span>
+                <div class="btn-group pull-right">
+                  <a href="/post/{{ post.id }}" class="btn btn-info btn-xs">详情</a>
+                  <a href="/post/edit/{{ post.id }}"
+                     class="btn btn-warning btn-xs {% if not request.is_staff and request.user != post.author %}disabled{% endif %}">修改</a>
+                  <a href="/post/delete/{{ post.id }}"
+                     class="btn btn-danger btn-xs {% if not request.is_staff and request.user != post.author %}disabled{% endif %}">删除</a>
+                </div>
+              </div>
+              <!-- /.post -->
+            {% endfor %}
+
+            {# 分页 #}
+            {#            <nav>#}
+            {#              <ul class="pager">#}
+            {#                {% if not posts.has_previous %}#}
+            {#                  <li class="previous disabled"><a#}
+            {#                    href="#"><span aria-hidden="true">&laquo;</span> 上一页</a></li>#}
+            {#                {% else %}#}
+            {#                  <li class="previous {% if not posts.has_previous %}disabled{% endif %}"><a#}
+            {#                    href="?page={{ posts.previous_page_number }}"><span aria-hidden="true">&laquo;</span> 上一页</a>#}
+            {#                  </li>#}
+            {#                {% endif %}#}
+            {#                <span>第{{ posts.number }}页 / 共{{ posts.paginator.num_pages }}页</span>#}
+            {#                {% if not posts.has_next %}#}
+            {#                  <li class="next disabled"><a#}
+            {#                    href="#">下一页 <span aria-hidden="true">&raquo;</span></a></li>#}
+            {#                {% else %}#}
+            {#                  <li class="next {% if not posts.has_next %}disabled{% endif %}"><a#}
+            {#                    href="?page={{ posts.next_page_number }}"> 上一页 <span aria-hidden="true">&raquo;</span></a></li>#}
+            {#                {% endif %}#}
+            {#              </ul>#}
+            {#            </nav>#}
+
+            <div class="row">
+              <div class="container text-right">
+                <nav aria-label="Page navigation">
+                  <ul class="pagination">
+
+                    <!--上一页-->
+                    <li class="{% if not page.has_previous %}disabled{% endif %}">
+                      {% if page.has_previous %}
+                        <a href="/index?page={{ page.previous_page_number }}" aria-label="Previous">
+                      {% endif %}
+                      <span aria-hidden="true">&laquo;</span>
+                      </a>
+                    </li>
+
+                    <!--页码-->
+                    <!--这里展示页码使用传递过来的dis_range -->
+                    {% for num in dis_range %}
+                      <li class="{% if num == page.number %}active{% else %}{% endif %}">
+                        <a href="/index?page={{ num }}">{{ num }}</a>
+                      </li>
+                    {% endfor %}
+
+                    <!--下一页-->
+                    <li class="{% if not page.has_next %}disabled{% endif %}">
+                      {% if page.has_next %}
+                        <a href="/index?page={{ page.next_page_number }}" aria-label="Next">
+                      {% endif %}
+                      <span aria-hidden="true">&raquo;</span>
+                      </a>
+                    </li>
+
+                  </ul>
+                </nav>
+              </div>
+            </div>
+          </div>
+
+          <div class="tab-pane" id="orders">
+
+            <div class="box">
+              <div class="box-header">
+                <h3 class="box-title">订单信息</h3>
+              </div>
+
+              <!-- /.box-header -->
+              <div class="box-body">
+
+                <table id="example1" class="table table-bordered table-striped">
+                  <thead>
+                  <tr>
+                    <th>联系人id</th>
+                    <th>联系人</th>
+                    <th>商品名称</th>
+                    <th>公司名称</th>
+                    <th>商品单价</th>
+                    <th>商品数量</th>
+                    <th>商品总价</th>
+                    <th>订单状态</th>
+                    <th>创建时间</th>
+                  </tr>
+                  </thead>
+                  <tbody>
+                  {% for order in my_orders %}
+                    <tr>
+                      <td>{{ order.user.userid }}</td>
+                      <td>{{ order.user.username }}</td>
+                      <td>{{ order.name }}</td>
+                      <td>{{ order.company }}
+                      </td>
+                      <td>{{ order.unit_price }}</td>
+                      <td>{{ order.amount }}</td>
+                      <td>{{ order.payment }}</td>
+                      <td>{% if order.status == "unprocessed" %}未处理{% elif order.status == "processed" %}已受理{% else %}
+                        已关闭{% endif %}</td>
+                      <td>{{ order.create_time }}</td>
+
+                    </tr>
+                  {% endfor %}
+                  </tbody>
+                  <tfoot>
+                  <tr>
+                    <th>联系人id</th>
+                    <th>联系人</th>
+                    <th>商品名称</th>
+                    <th>公司名称</th>
+                    <th>商品单价</th>
+                    <th>商品数量</th>
+                    <th>商品总价</th>
+                    <th>订单状态</th>
+                    <th>创建时间</th>
+                  </tr>
+                  </tfoot>
+                </table>
+
+              </div>
+              <!-- /.box-body -->
+
+            </div>
+            <!-- /.tab-pane -->
+          </div>
+          <!-- /.tab-content -->
+
+        </div>
+        <!-- /.nav-tabs-custom -->
+      </div>
+      <!-- /.col -->
+
+    </div>
+  </div>
+
+{% endblock %}
+
+{% block scripts %}
+  {{ block.super }}
+  <script>
+
+    $(function () {
+      $("#example1").DataTable();
+    });
+  </script>
+{% endblock %}

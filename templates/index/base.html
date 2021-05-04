@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+
+{% load fun_filter %}
+{% load cache %}
+{% load notifications_tags %}
+{% notifications_unread as unread_count %}
+
+<head>
+  <!-- 页面meta -->
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+
+  <title>{% block title %}Title{% endblock %}</title>
+  <meta name="description" content="AdminLTE2定制版">
+  <meta name="keywords" content="AdminLTE2定制版">
+
+
+  <!-- Tell the browser to be responsive to screen width -->
+  <meta content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" name="viewport">
+
+  {% block head %}
+    {% cache 500 css %}
+
+
+      {# bootstrap #}
+      <link rel="stylesheet" href="/static/plugins/bootstrap/css/bootstrap.min.css">
+
+      {# 字体图标 #}
+      <link rel="stylesheet" href="/static/plugins/font-awesome/css/font-awesome.min.css">
+      <link rel="stylesheet" href="/static/plugins/ionicons/css/ionicons.min.css">
+
+      {# 复选框 #}
+      <link rel="stylesheet" href="/static/plugins/iCheck/square/blue.css">
+
+      {# 时序图 #}
+      {#    <link rel="stylesheet" href="/static/plugins/morris/morris.css">#}
+
+      {# 日期选择 #}
+      {#    <link rel="stylesheet" href="/static/plugins/datepicker/datepicker3.css">#}
+      {#    <link rel="stylesheet" href="/static/plugins/daterangepicker/daterangepicker.css">#}
+      {#    <link rel="stylesheet" href="/static/plugins/bootstrap-datetimepicker/bootstrap-datetimepicker.css">#}
+
+      {# html编辑器 #}
+      {#    <link rel="stylesheet" href="/static/plugins/bootstrap-wysihtml5/bootstrap3-wysihtml5.min.css">#}
+
+      {# 表格 #}
+      <link rel="stylesheet" href="/static/plugins/datatables/dataTables.bootstrap.css">
+
+      {# 树形表 #}
+      {#    <link rel="stylesheet" href="/static/plugins/treeTable/jquery.treetable.css">#}
+      {#    <link rel="stylesheet" href="/static/plugins/treeTable/jquery.treetable.theme.default.css">#}
+      <link rel="stylesheet" href="/static/plugins/select2/select2.css">
+
+      {# 颜色选择器 #}
+      {#    <link rel="stylesheet" href="/static/plugins/colorpicker/bootstrap-colorpicker.min.css">#}
+
+      {# markdown #}
+      <link rel="stylesheet" href="/static/plugins/bootstrap-markdown/css/bootstrap-markdown.min.css">
+      {#    <link rel="stylesheet" href="/static/css/editormd.min.css">#}
+
+      {# 自定css #}
+      <link rel="stylesheet" href="/static/plugins/adminLTE/css/AdminLTE.css">
+      <link rel="stylesheet" href="/static/plugins/adminLTE/css/skins/_all-skins.min.css">
+      <link rel="stylesheet" href="/static/css/style.css">
+
+      {# 范围滑块 #}
+      {#        <link rel="stylesheet" href="/static/plugins/ionslider/ion.rangeSlider.css">#}
+      {#        <link rel="stylesheet" href="/static/plugins/ionslider/ion.rangeSlider.skinNice.css">#}
+      {#        <link rel="stylesheet" href="/static/plugins/bootstrap-slider/slider.css">#}
+
+      {# 滑块验证码 #}
+      {#    <link rel="stylesheet" href="/static/css/verify.css">#}
+    {% endcache %}
+
+  {% endblock %}
+</head>
+
+<body class="hold-transition skin-purple sidebar-mini sidebar-collapse" style="height: auto;">
+
+<div class="wrapper" style="height: auto;">
+  {% block navbar %}
+    <!-- 页面头部 -->
+    <header class="main-header">
+
+      <!-- Logo -->
+      <a href="/" class="logo">
+        <!-- mini logo for sidebar mini 50x50 pixels -->
+        <span class="logo-mini"><b>Lab</b></span>
+        <!-- logo for regular state and mobile devices -->
+        <span class="logo-lg"><b>Lab</b>实验室管理</span>
+      </a>
+
+
+      <!-- Header Navbar: style can be found in header.less -->
+      <nav class="navbar navbar-static-top">
+        <!-- Sidebar toggle button-->
+        <a href="#" class="sidebar-toggle" data-toggle="offcanvas" role="button">
+          <span class="sr-only">Toggle navigation</span>
+        </a>
+
+        <div class="navbar-custom-menu">
+          <ul class="nav navbar-nav">
+            <!-- Messages: style can be found in dropdown.less-->
+            {% if request.user.is_authenticated %}
+              <li class="dropdown messages-menu">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                  <i class="fa fa-envelope-o"></i>
+                  <span class="label label-success">{{ unread_count }}</span>
+                </a>
+                <ul class="dropdown-menu">
+                  <li class="header">你有{{ unread_count }}个未读消息</li>
+                  <li>
+                    <!-- inner menu: contains the actual data -->
+                    <ul class="menu">
+                      {% for notice in request.user.notifications.unread %}
+                        <li>
+                          <!-- start message -->
+                          <a href='javascript:notice_read({{ notice.id }});' id="notices">
+                            <div class="pull-left">
+                              <img src="{{ notice.actor|gravatar:90 }}" class="img-circle" alt="User Image">
+                            </div>
+                            <h4>
+                              系统消息
+                              <small><i class="fa fa-clock-o"></i> {{ notice.timesince }}</small>
+                            </h4>
+                            <p>{{ notice.verb }}</p>
+                          </a>
+                        </li>
+                        <!-- end message -->
+                      {% endfor %}
+                    </ul>
+                  </li>
+                  <li class="footer"><a href="javascript:notice_read_all();">全部标记为已读</a></li>
+                </ul>
+              </li>
+            {% endif %}
+
+            <!-- User Account: style can be found in dropdown.less -->
+            <li class="dropdown user user-menu">
+              {% if request.user.is_authenticated %}
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                  {% if request.user.is_authenticated %}
+                    <img src="{{ request.user|gravatar:25 }}" class="user-image" alt="User Image">
+                    <span class="hidden-xs">{{ request.user.username }}</span>
+                  {% else %}
+                    <img src="/static/img/default_avatar.png" class="user-image" alt="User Image">
+                    <span class="hidden-xs">Stranger</span>
+                  {% endif %}
+                </a>
+                <ul class="dropdown-menu">
+                  <!-- User image -->
+                  <li class="user-header">
+                    {% if request.user.is_authenticated %}
+                      <img src="{{ request.user|gravatar:90 }}" class="img-circle" alt="User Image">
+                      <p>
+                        {{ request.user.username }} - {{ request.user.userid }}
+                        <small>注册日期: {{ request.user.date_joined }}</small>
+                      </p>
+                    {% else %}
+                      <img src="/static/img/default_avatar.png" class="img-circle" alt="User Image">
+
+                    {% endif %}
+                  </li>
+                  <!-- Menu Body
+<li class="user-body">
+<div class="row">
+<div class="col-xs-4 text-center">
+    <a href="#">Followers</a>
+</div>
+<div class="col-xs-4 text-center">
+    <a href="#">Sales</a>
+</div>
+<div class="col-xs-4 text-center">
+    <a href="#">Friends</a>
+</div>
+</div>
+</li>-->
+                  <!-- Menu Footer-->
+                  <li class="user-footer">
+                    <div class="pull-left">
+                      <a href="/user/change-password/" class="btn btn-default btn-flat">修改密码</a>
+                    </div>
+                    <div class="pull-right">
+                      <a href="/user/logout/" class="btn btn-default btn-flat">注销</a>
+                    </div>
+                  </li>
+                </ul>
+              {% else %}
+                <a href="#">
+                  <img src="/static/img/default_avatar.png" class="user-image" alt="User Image">
+                  <span class="hidden-xs">Stranger</span>
+                </a>
+              {% endif %}
+
+            </li>
+
+          </ul>
+        </div>
+      </nav>
+    </header>
+    <!-- 页面头部 /-->
+  {% endblock %}
+
+  {% block sidebar %}
+    <!-- 导航侧栏 -->
+    <aside class="main-sidebar">
+      <!-- sidebar: style can be found in sidebar.less -->
+      <section class="sidebar">
+        <!-- Sidebar user panel -->
+        <div class="user-panel">
+          {% if request.user.is_authenticated %}
+            <div class="pull-left image">
+              <img src="{{ request.user|gravatar:45 }}" class="img-circle" alt="User Image">
+            </div>
+            <div class="pull-left info">
+              <p>{{ request.user.username }}</p>
+              <a href="/user/{{ request.user.userid }}"><i class="fa fa-circle text-success"></i> 在线</a>
+            </div>
+          {% else %}
+            <div class="pull-left image">
+              <img src="/static/img/default_avatar.png" class="img-circle" alt="User Image">
+            </div>
+            <div class="pull-left info">
+              <span>Stranger</span>
+              {#<a href="#"><i class="fa fa-circle text-success"></i> 在线</a>#}
+            </div>
+          {% endif %}
+        </div>
+        <!-- search form -->
+        <!--<form action="#" method="get" class="sidebar-form">
+<div class="input-group">
+<input type="text" name="q" class="form-control" placeholder="搜索/static.">
+<span class="input-group-btn">
+<button type="submit" name="search" id="search-btn" class="btn btn-flat"><i class="fa fa-search"></i>
+</button>
+</span>
+</div>
+</form>-->
+        <!-- /.search form -->
+
+
+        <!-- sidebar menu: : style can be found in sidebar.less -->
+        <ul class="sidebar-menu">
+          <li class="header">菜单</li>
+
+          <li id="admin-index"><a href="/"><i class="fa fa-dashboard"></i> <span>首页</span></a></li>
+
+          <!-- 菜单 -->
+          <li class="treeview">
+            <a href="#">
+              <i class="fa fa-user"></i> <span>用户管理</span>
+              <span class="pull-right-container">
+                        <i class="fa fa-angle-left pull-right"></i>
+                    </span>
+            </a>
+            <ul class="treeview-menu">
+
+              {% if request.user.is_authenticated %}
+                <li id="admin-login">
+                  <a href="/user/{{ request.user.userid }}">
+                    <i class="fa fa-circle-o"></i> 个人中心
+                  </a>
+                </li>
+              {% else %}
+                <li id="admin-login">
+                  <a href="#">
+                    <i class="fa fa-circle-o"></i> 个人中心
+                  </a>
+                </li>
+              {% endif %}
+
+              <li id="admin-login">
+                <a href="/user/login/">
+                  <i class="fa fa-circle-o"></i> 用户登录
+                </a>
+              </li>
+
+              <li id="admin-register">
+                <a href="/user/register/">
+                  <i class="fa fa-circle-o"></i> 用户注册
+                </a>
+              </li>
+
+              <li id="admin-change-password">
+                <a href="/user/change-password/">
+                  <i class="fa fa-circle-o"></i> 修改密码
+                </a>
+              </li>
+
+              <li id="admin-reset-password">
+                <a href="/user/password-reset/">
+                  <i class="fa fa-circle-o"></i> 忘记密码
+                </a>
+              </li>
+
+
+            </ul>
+          </li>
+
+
+          <li class="treeview">
+            <a href="#">
+              <i class="fa fa-cube"></i> <span>订单管理</span>
+              <span class="pull-right-container">
+                        <i class="fa fa-angle-left pull-right"></i>
+                    </span>
+            </a>
+            <ul class="treeview-menu">
+
+              <li id="order-manage">
+                <a href="/order/">
+                  <i class="fa fa-circle-o"></i> 全部订单
+                </a>
+              </li>
+
+              <li id="order-manage">
+                <a href="/order/add-order/">
+                  <i class="fa fa-circle-o"></i> 新建订单
+                </a>
+              </li>
+
+              <li id="order-manage">
+                <a href="/order/statistics/">
+                  <i class="fa fa-circle-o"></i> 订单统计
+                </a>
+              </li>
+
+            </ul>
+          </li>
+
+
+          <li class="treeview">
+            <a href="#">
+              <i class="fa fa-book"></i> <span>文章管理</span>
+              <span class="pull-right-container">
+                        <i class="fa fa-angle-left pull-right"></i>
+                    </span>
+            </a>
+            <ul class="treeview-menu">
+
+              <li id="travellog-manage">
+                <a href="/post/">
+                  <i class="fa fa-circle-o"></i> 我的文章
+                </a>
+              </li>
+
+              <li id="travellog-review">
+                <a href="/post/add-post/">
+                  <i class="fa fa-circle-o"></i> 新建文章
+                </a>
+              </li>
+
+            </ul>
+          </li>
+
+
+          <!-- 菜单 /-->
+
+        </ul>
+      </section>
+      <!-- /.sidebar -->
+    </aside>
+    <!-- 导航侧栏 /-->
+  {% endblock %}
+
+  {% block content %}
+    <!-- 内容区域 -->
+    <div class="content-wrapper">
+      <!-- 内容头部 -->
+      <section class="content-header">
+        {% block content_header %}
+          控制面板
+        {% endblock %}
+        <br>
+        <ol class="breadcrumb">
+          {% block breadcrumb %}
+            <li><a href="/"><i class="fa fa-dashboard"></i> 首页</a></li>
+          {% endblock %}
+        </ol>
+      </section>
+      <!-- 内容头部 /-->
+
+      {# 内容区域 #}
+      <section class="content">
+        {% if messages %}
+          {% for message in messages %}
+            <div class="alert alert-{% if message.tags %}{{ message.tags }}{% endif %}">
+              <button type="button" class="close" data-dismiss="alert">&times;</button>
+              {{ message }}
+            </div>
+          {% endfor %}
+        {% endif %}
+
+
+        <!-- 正文区域 -->
+        {% block page_content %}{% endblock %}
+        <!-- 正文区域 /-->
+      </section>
+    </div>
+    <!-- 内容区域 /-->
+  {% endblock %}
+
+  {% block footer %}
+    <!-- 底部导航 -->
+    <footer class="main-footer">
+      <div class="pull-right hidden-xs">
+        <b>Version</b> 0.1.0
+      </div>
+      <strong> django3.1.6 + sqlite3 + jquery2.2.3 + bootstrap3.3.7 </strong>
+    </footer>
+    <!-- 底部导航 /-->
+  {% endblock %}
+</div>
+
+
+{# js代码片段 #}
+{% block scripts %}
+  {% cache 500 js %}
+    <script src="/static/plugins/jQuery/jquery-2.2.3.min.js"></script>
+    <script src="/static/plugins/jQueryUI/jquery-ui.min.js"></script>
+    <script>
+      $.widget.bridge('uibutton', $.ui.button);
+    </script>
+    <script src="/static/plugins/bootstrap/js/bootstrap.min.js"></script>
+    {#    <script src="/static/plugins/raphael/raphael-min.js"></script>#}
+    {#    <script src="/static/plugins/morris/morris.min.js"></script>#}
+    {#  <script src="/static/plugins/sparkline/jquery.sparkline.min.js"></script>#}
+    {#  <script src="/static/plugins/jvectormap/jquery-jvectormap-1.2.2.min.js"></script>#}
+    {#  <script src="/static/plugins/jvectormap/jquery-jvectormap-world-mill-en.js"></script>#}
+    {#  <script src="/static/plugins/knob/jquery.knob.js"></script>#}
+    {#  <script src="/static/plugins/daterangepicker/moment.min.js"></script>#}
+    {#  <script src="/static/plugins/daterangepicker/daterangepicker.js"></script>#}
+    {#  <script src="/static/plugins/daterangepicker/daterangepicker.zh-CN.js"></script>#}
+    {#  <script src="/static/plugins/datepicker/bootstrap-datepicker.js"></script>#}
+    {#  <script src="/static/plugins/datepicker/locales/bootstrap-datepicker.zh-CN.js"></script>#}
+    {#  <script src="/static/plugins/bootstrap-wysihtml5/bootstrap3-wysihtml5.all.min.js"></script>#}
+    {#  <script src="/static/plugins/slimScroll/jquery.slimscroll.min.js"></script>#}
+    {#  <script src="/static/plugins/fastclick/fastclick.js"></script>#}
+    <script src="https://cdn.bootcdn.net/ajax/libs/echarts/5.0.1/echarts.min.js"></script>
+    <script src="/static/plugins/iCheck/icheck.min.js"></script>
+    <script src="/static/plugins/adminLTE/js/app.min.js"></script>
+    {#  <script src="/static/plugins/treeTable/jquery.treetable.js"></script>#}
+    <script src="/static/plugins/select2/select2.full.min.js"></script>
+    {#  <script src="/static/plugins/colorpicker/bootstrap-colorpicker.min.js"></script>#}
+    {#  <script src="/static/plugins/bootstrap-wysihtml5/bootstrap-wysihtml5.zh-CN.js"></script>#}
+    <script src="/static/plugins/bootstrap-markdown/js/bootstrap-markdown.js"></script>
+    <script src="/static/plugins/bootstrap-markdown/locale/bootstrap-markdown.zh.js"></script>
+    <script src="/static/plugins/bootstrap-markdown/js/markdown.js"></script>
+    <script src="/static/plugins/bootstrap-markdown/js/to-markdown.js"></script>
+    {#  <script src="/static/plugins/input-mask/jquery.inputmask.js"></script>#}
+    {#  <script src="/static/plugins/input-mask/jquery.inputmask.date.extensions.js"></script>#}
+    {#  <script src="/static/plugins/input-mask/jquery.inputmask.extensions.js"></script>#}
+    <script src="/static/plugins/datatables/jquery.dataTables.min.js"></script>
+    <script src="/static/plugins/datatables/dataTables.bootstrap.min.js"></script>
+  {% endcache %}
+  {#  <script src="/static/plugins/chartjs/Chart.min.js"></script>#}
+  {#  <script src="/static/plugins/flot/jquery.flot.min.js"></script>#}
+  {#  <script src="/static/plugins/flot/jquery.flot.resize.min.js"></script>#}
+  {#  <script src="/static/plugins/flot/jquery.flot.pie.min.js"></script>#}
+  {#  <script src="/static/plugins/flot/jquery.flot.categories.min.js"></script>#}
+  {#  <script src="/static/plugins/ionslider/ion.rangeSlider.min.js"></script>#}
+  {#  <script src="/static/plugins/bootstrap-slider/bootstrap-slider.js"></script>#}
+  {#  <script src="/static/plugins/bootstrap-datetimepicker/bootstrap-datetimepicker.js"></script>#}
+  {#  <script src="/static/plugins/bootstrap-datetimepicker/locales/bootstrap-datetimepicker.zh-CN.js"></script>#}
+  {#  <script type="text/javascript" src="/static/js/verify.min.js"></script>#}
+  <script>
+    let notice_read = function (nid) {
+      $.get("/notice/", {nid: nid}, function (data) {
+        if (data["code"] === 200) {
+          window.location.reload();
+        }
+      });
+    }
+
+    let notice_read_all = function () {
+      $.get("/notice/", {nid: 0}, function (data) {
+        if (data["code"] === 200) {
+          alert("操作成功");
+          window.location.reload();
+        }
+      });
+    }
+
+    $(document).ready(function () {
+      // 选择框
+      $(".select2").select2();
+
+    });
+
+
+    // 设置激活菜单
+    function setSidebarActive(tagUri) {
+      var liObj = $("#" + tagUri);
+      if (liObj.length > 0) {
+        liObj.parent().parent().addClass("active");
+        liObj.addClass("active");
+      }
+    }
+
+
+    $(document).ready(function () {
+      // 激活导航位置
+      setSidebarActive("admin-index");
+    });
+
+  </script>
+  <div id="scite-extension-marker"></div>
+  <div lang="zh-cn" id="cke_67" dir="ltr" class="cke cke_reset_all cke_1 cke_panel cke_combopanel cke_ltr"
+       style="z-index: 10001; position: absolute; top: 225px; left: 547px; opacity: 1; display: none;"
+       role="presentation">
+    <iframe id="cke_67_frame" class="cke_panel_frame" role="presentation" frameborder="0" src=""></iframe>
+  </div>
+  <style id="stylish-1" class="stylish" type="text/css">#notebook-container * {
+      font-family: Consolas, "微软雅黑"
+  }
+  </style>
+{% endblock %}
+
+</body>
+</html>
